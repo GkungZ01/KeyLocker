@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import Components.tkinterMore as tkM
+import components.tkinterMore as tkM
 import base64
 import secrets
 import os
