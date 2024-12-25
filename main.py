@@ -14,7 +14,7 @@ import json
 import hashlib
 import random
 import sys
-import Ui.Main as UiMain
+import ui.Main as UiMain
 import pyperclip
 
 
