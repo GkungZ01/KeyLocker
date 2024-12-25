@@ -134,7 +134,7 @@ class Ui_Main(object):
 
     def retranslateUi(self, Main):
         _translate = QtCore.QCoreApplication.translate
-        Main.setWindowTitle(_translate("Main", "Main"))
+        Main.setWindowTitle(_translate("Main", "KeyLocker 1.0"))
         self.label.setText(_translate("Main", "Username or Email or Phone"))
         self.btnCopyU.setText(_translate("Main", "Copy"))
         self.btnCopyP.setText(_translate("Main", "Copy"))
