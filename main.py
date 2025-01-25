@@ -24,7 +24,6 @@ data = {}
 
 random.seed(random.random())
 
-
 def askPassword():
     top = Tk()  # use Toplevel() instead of Tk()
     tkM.SetGeometry(top,"450x80", True)
