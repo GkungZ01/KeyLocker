@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KeyLocker 1.0
 
 A secure desktop application for managing and storing credentials with encryption.
@@ -89,3 +90,17 @@ keylocker/
 ## Contributing
 
 [Add contribution guidelines if accepting contributions]
+=======
+# KeyLocker
+A program for storing passwords to prevent forgetting them.
+
+Install Package
+```
+pip install cryptography PyQt5 pyperclip
+```
+
+Run Program
+```
+py main.py
+```
+>>>>>>> c5868a772c864604201e44564fde0bbafa8a21df
