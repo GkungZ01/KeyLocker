@@ -81,25 +81,3 @@ keylocker/
 │ └── tkinterMore.py # Additional UI utilities
 └── mainpass.passlock # Encrypted storage file
 ```
-
-## License
-
-[Add your chosen license here]
-
-## Contributing
-
-[Add contribution guidelines if accepting contributions]
-=======
-# KeyLocker
-A program for storing passwords to prevent forgetting them.
-
-Install Package
-```
-pip install cryptography PyQt5 pyperclip
-```
-
-Run Program
-```
-py main.py
-```
->>>>>>> c5868a772c864604201e44564fde0bbafa8a21df
