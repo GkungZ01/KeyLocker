@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # KeyLocker 1.0
 
 A secure desktop application for managing and storing credentials with encryption.
