@@ -4,7 +4,7 @@ from tkinter.simpledialog import *
 from tkinter.messagebox import *
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 
 import components.tkinterMore as tkM
 import base64
@@ -18,49 +18,117 @@ import ui.main as UiMain
 import pyperclip
 
 
-FPassLock: Fernet = ""
-MainPass = {}
-data = {}
+fernet_lock: Fernet = ""
+main_password = {}
+password_data = {}
 
 random.seed(random.random())
 
-def askPassword():
-    top = Tk()  # use Toplevel() instead of Tk()
-    tkM.SetGeometry(top,"450x80", True)
-    tkM.NotReSize(top)
-    if "salt" in MainPass:
-        top.title("KeyLocker | Login")
-    else :
-        top.title("KeyLocker | New Password")
-    value = StringVar()
-    FI = Frame(top)
-    FI.pack()
-    Label(FI, text='Enter Password:').pack(side='left')
-    tbPass = Entry(FI, width=40, show="*", textvariable=value)
-    tbPass.pack(side='left')
-    FD = Frame(top, pady=10)
-    FD.pack()
-    btnS = Button(FD,text="Submit")
-    btnS.pack(side='left')
-    btnS.bind('<Button-1>', lambda _: top.destroy())
-    btnC = Button(FD,text="Cancel")
-    btnC.pack(side='right')
-    btnC.bind('<Button-1>', lambda _: top.destroy())
-    top.grab_set()
-    top.wait_window(top)  # wait for itself destroyed, so like a modal dialog
-    return value.get()
+def show_password_dialog():
+    """
+    แสดงหน้าต่างสำหรับกรอกรหัสผ่าน
+    returns: str - รหัสผ่านที่ผู้ใช้กรอก หรือ string ว่างถ้าผู้ใช้ยกเลิก
+    """
+    dialog_window = Tk()
+    tkM.SetGeometry(dialog_window, "500x100", True)
+    tkM.NotReSize(dialog_window)
+    
+    # ใช้ list เพื่อเก็บสถานะการปิดหน้าต่าง
+    dialog_result = [False]
+    # เพิ่มตัวแปรเก็บสถานะการแสดงรหัสผ่าน
+    show_password = [False]
+    
+    def handle_dialog_close():
+        """จัดการเมื่อผู้ใช้ปิดหน้าต่าง"""
+        dialog_result[0] = False
+        dialog_window.destroy()
+    
+    def handle_submit():
+        """จัดการเมื่อผู้ใช้กดยืนยัน"""
+        dialog_result[0] = True
+        dialog_window.destroy()
+    
+    def handle_select_all(event):
+        event.widget.event_generate("<<SelectAll>>")
+        return "break"
+    
+    # เพิ่มฟังก์ชันสำหรับสลับการแสดงรหัสผ่าน
+    def toggle_password_visibility():
+        show_password[0] = not show_password[0]
+        password_entry.config(show="" if show_password[0] else "*")
+    
+    # กำหนดชื่อหน้าต่างตามสถานะ
+    if "salt" in main_password:
+        dialog_window.title("KeyLocker | Login")
+    else:
+        dialog_window.title("KeyLocker | New Password")
+    
+    password_var = StringVar()
+    
+    # สร้าง UI elements
+    input_frame = Frame(dialog_window, pady=15)
+    input_frame.pack()
+    
+    label = Label(input_frame, text='Enter Password:', font=('Arial', 11))
+    label.pack(side='left', padx=5)
+    
+    password_entry = Entry(
+        input_frame, 
+        width=40, 
+        show="*", 
+        textvariable=password_var,
+        font=('Arial', 11),
+        )
+    password_entry.pack(side='left', padx=5)
+    password_entry.focus_set()
+    password_entry.bind('<Return>', lambda _: handle_submit())
+    
+    show_password_button = Button(
+        input_frame, 
+        text="👁", 
+        width=3,
+        height=1,
+        command=toggle_password_visibility,
+        font=('Arial', 11),
+        )
+    show_password_button.pack(side='left', padx=5)
+    
+    button_frame = Frame(dialog_window, pady=10)
+    button_frame.pack()
+    
+    submit_button = Button(button_frame, text="Submit", font=('Arial', 10))
+    submit_button.pack(side='left', padx=5)
+    submit_button.bind('<Button-1>', lambda _: handle_submit())
+    
+    cancel_button = Button(button_frame, text="Cancel", font=('Arial', 10))
+    cancel_button.pack(side='right', padx=5)
+    cancel_button.bind('<Button-1>', lambda _: handle_dialog_close())
+    
+    # จัดการการปิดหน้าต่าง
+    dialog_window.protocol("WM_DELETE_WINDOW", handle_dialog_close)
+    dialog_window.grab_set()
+    
+    dialog_window.bind('<Control-a>', handle_select_all)
+    
+    # เพิ่ม focus อีกครั้งหลังจากสร้าง UI เสร็จ
+    dialog_window.lift()
+    dialog_window.focus_force()
+    
+    dialog_window.wait_window(dialog_window)
+    
+    return password_var.get() if dialog_result[0] else ""
 
-def getMainPass():
-    global MainPass
+def get_main_password():
+    global main_password
     if os.path.exists("mainpass.passlock"):
-        mpf = open("mainpass.passlock", "r+").read()
-        if mpf:
+        password_file = open("mainpass.passlock", "r+").read()
+        if password_file:
             try:
-                MainPass = json.loads(mpf)
+                main_password = json.loads(password_file)
             except json.decoder.JSONDecodeError:
                 showerror("PassLock", "File is not json")
                 exit(1)
-    else :
+    else:
         open("mainpass.passlock", "x")
 
 
@@ -78,16 +146,16 @@ def derive_key(password, salt):
 
 
 def get_key(password):
-    global MainPass
+    global main_password
     # get salt
     salt: bytes
 
-    if "salt" in MainPass:
-        salt = base64.b64decode(MainPass["salt"].encode())
+    if "salt" in main_password:
+        salt = base64.b64decode(main_password["salt"].encode())
     else:
         salt = get_salt(password)
-        MainPass["salt"] = base64.b64encode(salt).decode()
-        saveMainPass()
+        main_password["salt"] = base64.b64encode(salt).decode()
+        save_main_password()
 
     # generate the key from the salt and the password
     derived_key = derive_key(password, salt)
@@ -95,209 +163,213 @@ def get_key(password):
     return base64.urlsafe_b64encode(derived_key)
 
 
-def saveMainPass():
-    global data, MainPass
+def save_main_password():
+    global password_data, main_password
 
-    if FPassLock:
-        MainPass['data'] = base64.b64encode(
-            FPassLock.encrypt(json.dumps(data).encode())).decode()
+    if fernet_lock:
+        main_password['data'] = base64.b64encode(
+            fernet_lock.encrypt(json.dumps(password_data).encode())).decode()
     with open("mainpass.passlock", "w") as file_data:
-        file_data.write(json.dumps(MainPass))
-    print("SAVE")
+        file_data.write(json.dumps(main_password))
 
 
 def login():
-    global data, FPassLock
-    password = askPassword()
+    global password_data, fernet_lock
+    password = show_password_dialog()
 
     if not password:
-        exit(1)
+        sys.exit(1)
 
     fernet = Fernet(get_key(
         hashlib.sha256(password.encode()).hexdigest()))
 
     try:
-        data = {} if "data" not in MainPass else json.loads(
-            fernet.decrypt(base64.b64decode(MainPass["data"].encode())))
-        FPassLock = fernet
+        password_data = {} if "data" not in main_password else json.loads(
+            fernet.decrypt(base64.b64decode(main_password["data"].encode())))
+        fernet_lock = fernet
     except FileNotFoundError:
         open("mainpass.passlock", "x")
-        data = {}
+        password_data = {}
     except InvalidToken:
         showerror(
-            "PassLock", "Invalid token, most likely the password is incorrect")
+            "KeyLocker", "Invalid password")
 
 
 def handle_selection_changed():
-    global SelectedIndex, SelectedNameKey
-    index = uiMain.listView.selectionModel().currentIndex()
-    nameKey = listViewModel.data(index, 0)
-    item = findKey(nameKey)
+    global selected_index, selected_key_name
+    index = ui_main.listView.selectionModel().currentIndex()
+    key_name = list_view_model.data(index, 0)
+    item = find_key(key_name)
     if item:
-        SelectedIndex = index.row()
-        SelectedNameKey = nameKey
-        uiMain.tbKey.setText(item["NameKey"])
-        uiMain.tbU.setText(item["Username"])
-        uiMain.tbP.setText(item["Password"])
+        selected_index = index.row()
+        selected_key_name = key_name
+        ui_main.tbKey.setText(item["NameKey"])
+        ui_main.tbU.setText(item["Username"])
+        ui_main.tbP.setText(item["Password"])
     
-        uiMain.btnEdit.setEnabled(True)
-        uiMain.btnDelete.setEnabled(True)
-        uiMain.btnCopyU.setEnabled(True)
-        uiMain.btnCopyP.setEnabled(True)
-        uiMain.btnAdd.setEnabled(False)
+        ui_main.btnEdit.setEnabled(True)
+        ui_main.btnDelete.setEnabled(True)
+        ui_main.btnCopyU.setEnabled(True)
+        ui_main.btnCopyP.setEnabled(True)
+        ui_main.btnAdd.setEnabled(False)
 
 
-def clickAddKey():
-    if uiMain.tbKey.text() == "":
+def add_key():
+    if ui_main.tbKey.text() == "":
         showerror("KeyLocker", "Name Key is Empty")
         return
-    Key_ = {
-        "NameKey": uiMain.tbKey.text(),
-        "Username": uiMain.tbU.text(),
-        "Password": uiMain.tbP.text()
+    new_key = {
+        "NameKey": ui_main.tbKey.text(),
+        "Username": ui_main.tbU.text(),
+        "Password": ui_main.tbP.text()
     }
-    data["Keys"].append(Key_)
-    saveMainPass()
-    clickClear()
-    loadKeys()
-    
+    password_data["Keys"].append(new_key)
+    save_main_password()
+    clear_form()
+    load_keys()
 
-def clickEdit():
-    if SelectedIndex == -1:
+def edit_key():
+    if selected_index == -1:
         return
-    if uiMain.tbKey.text() == "":
+    if ui_main.tbKey.text() == "":
         showerror("KeyLocker", "Name Key is Empty")
         return
-    Key_ = {
-        "NameKey": uiMain.tbKey.text(),
-        "Username": uiMain.tbU.text(),
-        "Password": uiMain.tbP.text()
+    updated_key = {
+        "NameKey": ui_main.tbKey.text(),
+        "Username": ui_main.tbU.text(),
+        "Password": ui_main.tbP.text()
     }
-    data["Keys"][findIndexKey(SelectedNameKey)] = Key_
-    saveMainPass()
-    clickClear()
-    loadKeys()
+    password_data["Keys"][find_key_index(selected_key_name)] = updated_key
+    save_main_password()
+    clear_form()
+    load_keys()
 
-def clickDelete():
-    global data
-    if SelectedIndex == -1 : return
-    del(data["Keys"][findIndexKey(SelectedNameKey)])
-    saveMainPass()
-    clickClear()
-    loadKeys()
+def delete_key():
+    global password_data
+    if selected_index == -1: return
+    del(password_data["Keys"][find_key_index(selected_key_name)])
+    save_main_password()
+    clear_form()
+    load_keys()
 
-def clickClear():
-    uiMain.cbSPass.setChecked(False)
-    uiMain.listView.clearSelection()
-    uiMain.tbKey.setText("")
-    uiMain.tbU.setText("")
-    uiMain.tbP.setText("")
+def clear_form():
+    ui_main.cbSPass.setChecked(False)
+    ui_main.listView.clearSelection()
+    ui_main.tbKey.setText("")
+    ui_main.tbU.setText("")
+    ui_main.tbP.setText("")
     
-    SelectedIndex = -1
-    uiMain.btnEdit.setEnabled(False)
-    uiMain.btnDelete.setEnabled(False)
-    uiMain.btnCopyU.setEnabled(False)
-    uiMain.btnCopyP.setEnabled(False)
-    uiMain.btnAdd.setEnabled(True)
+    global selected_index
+    selected_index = -1
+    ui_main.btnEdit.setEnabled(False)
+    ui_main.btnDelete.setEnabled(False)
+    ui_main.btnCopyU.setEnabled(False)
+    ui_main.btnCopyP.setEnabled(False)
+    ui_main.btnAdd.setEnabled(True)
 
-def findKey(nameKey: str):
-    for Key in data["Keys"]:
+def find_key(nameKey: str):
+    for Key in password_data["Keys"]:
         if nameKey == Key["NameKey"]:
             return Key
     return False
 
 
-def findIndexKey(nameKey: str):
-    for idx, Key in enumerate(data["Keys"]):
+def find_key_index(nameKey: str):
+    for idx, Key in enumerate(password_data["Keys"]):
         if nameKey == Key["NameKey"]:
             return idx
     return False
 
-def loadKeys(Keys : list = False):
-    listViewModel.clear()
-    for Key in Keys if (not Keys == False) else data["Keys"]:
-        listViewModel.appendRow(
+def load_keys(Keys : list = False):
+    list_view_model.clear()
+    for Key in Keys if (not Keys == False) else password_data["Keys"]:
+        list_view_model.appendRow(
             QtGui.QStandardItem(Key["NameKey"]))
 
-def clickSearch():
-    search = uiMain.tbSearch.text()
-    Keys = []
-    for Key in data["Keys"]:
-        if search in Key["NameKey"]:
-            Key["idx"] = findIndexKey(Key["NameKey"])
-            Keys.append(Key)
-    loadKeys(Keys)
+def search_keys():
+    search_text = ui_main.tbSearch.text()
+    found_keys = []
+    for key in password_data["Keys"]:
+        if search_text in key["NameKey"]:
+            key["idx"] = find_key_index(key["NameKey"])
+            found_keys.append(key)
+    load_keys(found_keys)
     
-def CopyU():
-    pyperclip.copy(uiMain.tbU.text())
+def copy_username():
+    pyperclip.copy(ui_main.tbU.text())
     
 
-def CopyP():
-    pyperclip.copy(uiMain.tbP.text())
+def copy_password():
+    pyperclip.copy(ui_main.tbP.text())
     
 
 def stateChanged(state: int):
-    print("Change")
     if state == 2:
-        uiMain.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
+        ui_main.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
     else:
-        uiMain.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        ui_main.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
 def main():
-    global data, uiMain, listViewModel
+    global password_data, ui_main, list_view_model
     # Check File Main Pass
     
     # Login
-    if not FPassLock:
+    if not fernet_lock:
         login()
         return main()
     
-    if not "Keys" in data:
-        data["Keys"] = []
-        saveMainPass()
+    if "Keys" not in password_data:
+        password_data["Keys"] = []
+        save_main_password()
 
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    uiMain = UiMain.Ui_Main()
-    uiMain.setupUi(MainWindow)
+    ui_main = UiMain.Ui_Main()
+    ui_main.setupUi(MainWindow)
 
     # Setting
-    uiMain.btnEdit.setEnabled(False)
-    uiMain.btnDelete.setEnabled(False)
-    uiMain.btnCopyU.setEnabled(False)
-    uiMain.btnCopyP.setEnabled(False)
+    ui_main.btnEdit.setEnabled(False)
+    ui_main.btnDelete.setEnabled(False)
+    ui_main.btnCopyU.setEnabled(False)
+    ui_main.btnCopyP.setEnabled(False)
 
-    listViewModel = QtGui.QStandardItemModel()
-    uiMain.listView.setModel(listViewModel)
+    list_view_model = QtGui.QStandardItemModel()
+    ui_main.listView.setModel(list_view_model)
     
-    uiMain.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+    # เพิ่มการตั้งค่าฟอนต์สำหรับ listView
+    font = QtGui.QFont()
+    font.setFamily("Arial")
+    font.setPointSize(11)
+    ui_main.listView.setFont(font)
+    
+    ui_main.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
     # Event
 
-    uiMain.listView.selectionModel().selectionChanged.connect(
+    ui_main.listView.selectionModel().selectionChanged.connect(
         handle_selection_changed
     )
 
-    uiMain.btnAdd.clicked.connect(clickAddKey)
-    uiMain.btnDelete.clicked.connect(clickDelete)
-    uiMain.btnEdit.clicked.connect(clickEdit)
-    uiMain.btnClear.clicked.connect(clickClear)
+    ui_main.btnAdd.clicked.connect(add_key)
+    ui_main.btnDelete.clicked.connect(delete_key)
+    ui_main.btnEdit.clicked.connect(edit_key)
+    ui_main.btnClear.clicked.connect(clear_form)
     
-    uiMain.btnCopyU.clicked.connect(CopyU)
-    uiMain.btnCopyP.clicked.connect(CopyP)
+    ui_main.btnCopyU.clicked.connect(copy_username)
+    ui_main.btnCopyP.clicked.connect(copy_password)
     
-    uiMain.cbSPass.stateChanged.connect(stateChanged)
+    ui_main.cbSPass.stateChanged.connect(stateChanged)
     
-    uiMain.btnSearch.clicked.connect(clickSearch)
+    ui_main.btnSearch.clicked.connect(search_keys)
     
     # End Event
 
-    loadKeys()
+    load_keys()
 
     MainWindow.show()
     sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
-    getMainPass()
+    get_main_password()
     main()
