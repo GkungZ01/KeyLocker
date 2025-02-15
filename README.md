@@ -6,7 +6,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![PyQt5](https://img.shields.io/badge/PyQt-5-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0-red.svg)](https://github.com/yourusername/keylocker)
 
 <p align="center">
