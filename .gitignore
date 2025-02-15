@@ -155,7 +155,7 @@ cython_debug/
 # File Password
 mainpass.passlock
 
-assets
+assets/icons
 
 .vscode
 

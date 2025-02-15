@@ -10,7 +10,7 @@
 [![Version](https://img.shields.io/badge/Version-1.0-red.svg)](https://github.com/yourusername/keylocker)
 
 <p align="center">
-  <img src="screenshots/main.png" alt="KeyLocker Screenshot" width="600"/>
+  <img src="assets/img/main.png" alt="KeyLocker Screenshot" width="600"/>
 </p>
 
 </div>
