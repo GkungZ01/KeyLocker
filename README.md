@@ -110,18 +110,6 @@ keylocker/
 └── 🔒 mainpass.passlock   # Secure storage
 ```
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. 🍴 Fork the repository
-2. 🔧 Make your changes
-3. ✅ Submit a pull request
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 📈 Version History
 
 ### Version 1.0.0 (2024)
@@ -136,7 +124,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
 
 ### Made with ❤️ for Security
-
-[Report Bug](https://github.com/yourusername/keylocker/issues) · [Request Feature](https://github.com/yourusername/keylocker/issues)
 
 </div>
