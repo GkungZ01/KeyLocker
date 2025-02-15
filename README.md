@@ -77,6 +77,7 @@ python main.py
 <td width="50%">
 
 ### 📝 Managing Entries
+
 - Click `[+]` to add new credentials
 - Select entries to view/edit
 - Use `[🗑️]` to delete entries
@@ -86,6 +87,7 @@ python main.py
 <td width="50%">
 
 ### 🔐 Security Best Practices
+
 - Use strong master password
 - Regular backups recommended
 - Keep software updated
@@ -97,7 +99,7 @@ python main.py
 
 ## 📁 Project Structure
 
-```
+```text
 keylocker/
 ├── 📄 main.py           # Core application
 ├── 📁 ui/
@@ -123,6 +125,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📈 Version History
 
 ### Version 1.0.0 (2024)
+
 - ✨ Initial release
 - 🔒 Secure credential management
 - 🔍 Search functionality
