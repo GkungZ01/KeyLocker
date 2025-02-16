@@ -8,6 +8,7 @@
 [![PyQt5](https://img.shields.io/badge/PyQt-5-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0.0-red.svg)](https://github.com/yourusername/keylocker)
+[![Releases](https://img.shields.io/github/v/release/yourusername/keylocker?include_prereleases)](https://github.com/GkungZ01/KeyLocker/releases)
 
 <p align="center">
   <img src="assets/img/main.png" alt="KeyLocker Screenshot" width="600"/>
