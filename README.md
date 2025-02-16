@@ -52,7 +52,7 @@ pyperclip
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/keylocker.git
+git clone https://github.com/GkungZ01/KeyLocker.git
 cd keylocker
 
 # Install dependencies
