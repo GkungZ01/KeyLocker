@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Main.ui'
+# Form implementation generated from reading ui file 'ui/main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -11,14 +11,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Main(object):
-    def setupUi(self, Main):
-        Main.setObjectName("Main")
-        Main.setWindowModality(QtCore.Qt.WindowModal)
-        Main.resize(852, 473)
-        Main.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
-        Main.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.centralwidget = QtWidgets.QWidget(Main)
+class Ui_KeyLocker(object):
+    def setupUi(self, KeyLocker):
+        KeyLocker.setObjectName("KeyLocker")
+        KeyLocker.setWindowModality(QtCore.Qt.WindowModal)
+        KeyLocker.resize(852, 473)
+        KeyLocker.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        KeyLocker.setFocusPolicy(QtCore.Qt.ClickFocus)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("ui\\../assets/icons/icon_by_icons8.com.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        KeyLocker.setWindowIcon(icon)
+        self.centralwidget = QtWidgets.QWidget(KeyLocker)
         self.centralwidget.setObjectName("centralwidget")
         self.listView = QtWidgets.QListView(self.centralwidget)
         self.listView.setGeometry(QtCore.QRect(10, 50, 401, 381))
@@ -124,26 +127,48 @@ class Ui_Main(object):
         font.setPointSize(10)
         self.cbSPass.setFont(font)
         self.cbSPass.setObjectName("cbSPass")
-        Main.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(Main)
+        KeyLocker.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(KeyLocker)
         self.statusbar.setObjectName("statusbar")
-        Main.setStatusBar(self.statusbar)
+        KeyLocker.setStatusBar(self.statusbar)
+        self.menuBar = QtWidgets.QMenuBar(KeyLocker)
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 852, 21))
+        self.menuBar.setObjectName("menuBar")
+        self.menu_Help = QtWidgets.QMenu(self.menuBar)
+        self.menu_Help.setObjectName("menu_Help")
+        KeyLocker.setMenuBar(self.menuBar)
+        self.actionAbout = QtWidgets.QAction(KeyLocker)
+        self.actionAbout.setObjectName("actionAbout")
+        self.menu_Help.addAction(self.actionAbout)
+        self.menuBar.addAction(self.menu_Help.menuAction())
 
-        self.retranslateUi(Main)
-        QtCore.QMetaObject.connectSlotsByName(Main)
+        self.retranslateUi(KeyLocker)
+        QtCore.QMetaObject.connectSlotsByName(KeyLocker)
 
-    def retranslateUi(self, Main):
+    def retranslateUi(self, KeyLocker):
         _translate = QtCore.QCoreApplication.translate
-        Main.setWindowTitle(_translate("Main", "KeyLocker 1.0"))
-        self.label.setText(_translate("Main", "Username or Email or Phone"))
-        self.btnCopyU.setText(_translate("Main", "Copy"))
-        self.btnCopyP.setText(_translate("Main", "Copy"))
-        self.label_2.setText(_translate("Main", "Password"))
-        self.btnAdd.setText(_translate("Main", "Add"))
-        self.btnDelete.setText(_translate("Main", "Delete"))
-        self.btnEdit.setText(_translate("Main", "Edit"))
-        self.label_3.setText(_translate("Main", "Name Key"))
-        self.label_4.setText(_translate("Main", "Search"))
-        self.btnSearch.setText(_translate("Main", "Search"))
-        self.btnClear.setText(_translate("Main", "Clear"))
-        self.cbSPass.setText(_translate("Main", "Show Password"))
+        KeyLocker.setWindowTitle(_translate("KeyLocker", "KeyLocker"))
+        self.label.setText(_translate("KeyLocker", "Username or Email or Phone"))
+        self.btnCopyU.setText(_translate("KeyLocker", "Copy"))
+        self.btnCopyP.setText(_translate("KeyLocker", "Copy"))
+        self.label_2.setText(_translate("KeyLocker", "Password"))
+        self.btnAdd.setText(_translate("KeyLocker", "Add"))
+        self.btnDelete.setText(_translate("KeyLocker", "Delete"))
+        self.btnEdit.setText(_translate("KeyLocker", "Edit"))
+        self.label_3.setText(_translate("KeyLocker", "Name Key"))
+        self.label_4.setText(_translate("KeyLocker", "Search"))
+        self.btnSearch.setText(_translate("KeyLocker", "Search"))
+        self.btnClear.setText(_translate("KeyLocker", "Clear"))
+        self.cbSPass.setText(_translate("KeyLocker", "Show Password"))
+        self.menu_Help.setTitle(_translate("KeyLocker", "&Help"))
+        self.actionAbout.setText(_translate("KeyLocker", "About"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    KeyLocker = QtWidgets.QMainWindow()
+    ui = Ui_KeyLocker()
+    ui.setupUi(KeyLocker)
+    KeyLocker.show()
+    sys.exit(app.exec_())

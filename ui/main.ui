@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Main</class>
- <widget class="QMainWindow" name="KeyLocker 1.0">
+ <class>KeyLocker</class>
+ <widget class="QMainWindow" name="KeyLocker">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
@@ -20,7 +20,11 @@
    <enum>Qt::ClickFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Main</string>
+   <string>KeyLocker</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../assets/icons/icon_by_icons8.com.ico</normaloff>../assets/icons/icon_by_icons8.com.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QListView" name="listView">
@@ -326,6 +330,28 @@
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>852</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menu_Help"/>
+  </widget>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

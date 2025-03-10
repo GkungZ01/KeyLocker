@@ -17,6 +17,7 @@ import sys
 import ui.main as UiMain
 import pyperclip
 import ctypes
+from components.logSystem import logSystem
 
 
 fernet_lock: Fernet = ""
@@ -25,6 +26,8 @@ password_data = {}
 file_path = "mainpass.passlock"
 
 random.seed(random.random())
+
+log = logSystem().add
 
 def show_password_dialog():
     """
@@ -123,15 +126,20 @@ def show_password_dialog():
 
 def get_main_password():
     global main_password
+    log("INFO", "Check File Main Pass")
     if os.path.exists(file_path):
         password_file = open(file_path, "r").read()
         if password_file:
             try:
                 main_password = json.loads(password_file)
+                log("INFO", "File Main Pass found and loaded")
             except json.decoder.JSONDecodeError:
+                log("ERROR", "File Main Pass is not json")
                 showerror("PassLock", "File is not json")
                 exit(1)
     else:
+        log("INFO", "File Main Pass not found")
+        log("INFO", "Create File Main Pass")
         open(file_path, "x")
 
 
@@ -167,6 +175,7 @@ def get_key(password):
 
 
 def save_main_password():
+    log("INFO", "Save Main Password")
     global password_data, main_password
 
     if fernet_lock:
@@ -181,6 +190,7 @@ def login():
     password = show_password_dialog()
 
     if not password:
+        log("INFO", "Exit Program")
         sys.exit(1)
 
     fernet = Fernet(get_key(
@@ -290,6 +300,7 @@ def find_key_index(nameKey: str):
 
 
 def load_keys(Keys: list = False):
+    log("INFO", "Load Keys")
     list_view_model.clear()
     for Key in Keys if (not Keys == False) else password_data["Keys"]:
         list_view_model.appendRow(
@@ -297,6 +308,7 @@ def load_keys(Keys: list = False):
 
 
 def search_keys():
+    log("INFO", "Search Keys")
     search_text = ui_main.tbSearch.text()
     found_keys = []
     for key in password_data["Keys"]:
@@ -327,6 +339,7 @@ def main():
 
     # Login
     if not fernet_lock:
+        log("INFO", "Login")
         login()
         return main()
 
@@ -334,6 +347,8 @@ def main():
         password_data["Keys"] = []
         save_main_password()
 
+    log("INFO", "Start GUI")
+    # GUI
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui_main = UiMain.Ui_Main()
@@ -383,6 +398,8 @@ def main():
 
 
 if __name__ == "__main__":
+    log("INFO", "Start Program")
+    log("INFO", "Check Access File Main Pass")
     # ตรวจสอบว่าโปรแกรมมีสิทธิ์ในการอ่านและเขียนไฟล์หรือไม่
     if not os.access(file_path, os.R_OK) and not os.access(file_path, os.W_OK):
         # ตรวจสอบว่าโปรแกรมกำลังทำงานในโหมด Administrator หรือไม่

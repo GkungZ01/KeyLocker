@@ -155,9 +155,8 @@ cython_debug/
 # File Password
 mainpass.passlock
 
-assets/icons
-
 .vscode
+log.txt
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
