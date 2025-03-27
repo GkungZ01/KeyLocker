@@ -31,7 +31,7 @@ devMode = False
 
 # Config
 
-version = "1.0.2"
+version = "1.0.1"
 
 random.seed(random.random())
 

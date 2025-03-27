@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![PyQt5](https://img.shields.io/badge/PyQt-5-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-red.svg)](https://github.com/GkungZ01/KeyLocker)
+[![Version](https://img.shields.io/badge/Version-1.0.1-red.svg)](https://github.com/GkungZ01/KeyLocker)
 [![Releases](https://img.shields.io/github/v/release/GkungZ01/KeyLocker?include_prereleases)](https://github.com/GkungZ01/KeyLocker/releases)
 
 <p align="center">
@@ -128,6 +128,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-### Made with ❤️ for Security
+### Made with ❤️ for convenience
 
 </div>
