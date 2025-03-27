@@ -113,7 +113,7 @@ keylocker/
 
 ## 📈 Version History
 
-### Version 1.0.1 (2024)
+### Version 1.0.1 (2025)
 - 🔧 Minor bug fixes and improvements
 - ⚡ Performance optimizations
 
