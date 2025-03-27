@@ -106,9 +106,12 @@ keylocker/
 ├── 📁 ui/
 │   ├── 📄 main.py      # UI implementation
 │   └── 📄 main.ui      # UI design file
-├── 📁 components/
-│   └── 📄 tkinterMore.py  # UI utilities
-└── 🔒 mainpass.passlock   # Secure storage
+├── 📁 modules/
+│   ├── 📄 tkinterMore.py  # UI utilities
+│   └── 📄 logSystem.py    # Logging system
+├── 📁 assets/
+│   └── 📁 icons/       # Application icons
+└── 🔒 mainpass.passlock # Secure storage
 ```
 
 ## 📈 Version History
