@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from PyQt5 import QtGui, QtWidgets
 
-import components.tkinterMore as tkM
+import modules.tkinterMore as tkM
 import base64
 import secrets
 import os
@@ -17,17 +17,28 @@ import sys
 import ui.main as UiMain
 import pyperclip
 import ctypes
-from components.logSystem import logSystem
+from modules.logSystem import logSystem
 
 
 fernet_lock: Fernet = ""
 main_password = {}
 password_data = {}
+temp_list = {}
 file_path = "mainpass.passlock"
+selected_index = -1
+selected_key = ""
+devMode = False
+
+# Config
+
+version = "1.0.2"
 
 random.seed(random.random())
 
-log = logSystem().add
+_logSystem = logSystem()
+
+log = _logSystem.add
+
 
 def show_password_dialog():
     """
@@ -37,6 +48,7 @@ def show_password_dialog():
     dialog_window = Tk()
     tkM.SetGeometry(dialog_window, "500x100", True)
     tkM.NotReSize(dialog_window)
+    tkM.setIcon(dialog_window, "assets/icons/icon_by_icons8.com.ico")
 
     # ใช้ list เพื่อเก็บสถานะการปิดหน้าต่าง
     dialog_result = [False]
@@ -118,6 +130,8 @@ def show_password_dialog():
     # เพิ่ม focus อีกครั้งหลังจากสร้าง UI เสร็จ
     dialog_window.lift()
     dialog_window.focus_force()
+    
+    password_entry.focus_set()
 
     dialog_window.wait_window(dialog_window)
 
@@ -174,6 +188,26 @@ def get_key(password):
     return base64.urlsafe_b64encode(derived_key)
 
 
+def generate_id_key():
+    return secrets.token_hex(16)
+
+
+def _get_key():
+    key = generate_id_key()
+    if (key in password_data["Keys"]):
+        return _get_key()
+    return key
+
+
+def fix_keys() -> dict:
+    keys = password_data["Keys"]
+    _keys = {}
+
+    for key in keys:
+        _keys.update({_get_key(): key})
+    return _keys
+
+
 def save_main_password():
     log("INFO", "Save Main Password")
     global password_data, main_password
@@ -209,13 +243,14 @@ def login():
 
 
 def handle_selection_changed():
-    global selected_index, selected_key_name
+    global selected_index, selected_key
     index = ui_main.listView.selectionModel().currentIndex()
-    key_name = list_view_model.data(index, 0)
-    item = find_key(key_name)
-    if item:
-        selected_index = index.row()
-        selected_key_name = key_name
+    selected_index = index.row()
+    ui_main.btnClearSelection.setEnabled(selected_index >= 0)
+    if (selected_index >= 0):
+        items = temp_list if temp_list else password_data["Keys"]
+        item = list(items.values())[selected_index]
+        selected_key = list(items.keys())[selected_index]
         ui_main.tbKey.setText(item["NameKey"])
         ui_main.tbU.setText(item["Username"])
         ui_main.tbP.setText(item["Password"])
@@ -226,17 +261,22 @@ def handle_selection_changed():
         ui_main.btnCopyP.setEnabled(True)
         ui_main.btnAdd.setEnabled(False)
 
+        ui_main.btnClearForm.setEnabled(False)
+
 
 def add_key():
+    global password_data
     if ui_main.tbKey.text() == "":
         showerror("KeyLocker", "Name Key is Empty")
         return
-    new_key = {
+
+    new_key = {_get_key(): {
         "NameKey": ui_main.tbKey.text(),
         "Username": ui_main.tbU.text(),
         "Password": ui_main.tbP.text()
-    }
-    password_data["Keys"].append(new_key)
+    }}
+    
+    password_data["Keys"].update(new_key)
     save_main_password()
     clear_form()
     load_keys()
@@ -253,7 +293,10 @@ def edit_key():
         "Username": ui_main.tbU.text(),
         "Password": ui_main.tbP.text()
     }
-    password_data["Keys"][find_key_index(selected_key_name)] = updated_key
+    password_data["Keys"][selected_key] = updated_key
+    if temp_list:
+        if selected_key in temp_list:
+            temp_list[selected_key] = updated_key
     save_main_password()
     clear_form()
     load_keys()
@@ -263,33 +306,39 @@ def delete_key():
     global password_data
     if selected_index == -1:
         return
-    del (password_data["Keys"][find_key_index(selected_key_name)])
+    del (password_data["Keys"][selected_key])
     save_main_password()
     clear_form()
     load_keys()
 
 
 def clear_form():
-    ui_main.cbSPass.setChecked(False)
-    ui_main.listView.clearSelection()
     ui_main.tbKey.setText("")
     ui_main.tbU.setText("")
     ui_main.tbP.setText("")
 
+
+def clear_selection():
     global selected_index
-    selected_index = -1
+
+    ui_main.btnClearForm.setEnabled(True)
+    ui_main.btnAdd.setEnabled(True)
     ui_main.btnEdit.setEnabled(False)
     ui_main.btnDelete.setEnabled(False)
     ui_main.btnCopyU.setEnabled(False)
     ui_main.btnCopyP.setEnabled(False)
-    ui_main.btnAdd.setEnabled(True)
+
+    ui_main.listView.selectionModel().clearCurrentIndex()
+    ui_main.listView.selectionModel().clearSelection()
+
+    clear_form()
 
 
-def find_key(nameKey: str):
-    for Key in password_data["Keys"]:
-        if nameKey == Key["NameKey"]:
-            return Key
-    return False
+def clear_search():
+    global temp_list
+    ui_main.tbSearch.setText("")
+    temp_list = {}
+    load_keys()
 
 
 def find_key_index(nameKey: str):
@@ -299,23 +348,25 @@ def find_key_index(nameKey: str):
     return False
 
 
-def load_keys(Keys: list = False):
+def load_keys():
     log("INFO", "Load Keys")
     list_view_model.clear()
-    for Key in Keys if (not Keys == False) else password_data["Keys"]:
+    for _, value in temp_list.items() if temp_list else password_data["Keys"].items():
         list_view_model.appendRow(
-            QtGui.QStandardItem(Key["NameKey"]))
+            QtGui.QStandardItem(value["NameKey"]))
 
 
 def search_keys():
+    global temp_list
     log("INFO", "Search Keys")
+    temp_list = {}
     search_text = ui_main.tbSearch.text()
-    found_keys = []
-    for key in password_data["Keys"]:
-        if search_text in key["NameKey"]:
-            key["idx"] = find_key_index(key["NameKey"])
-            found_keys.append(key)
-    load_keys(found_keys)
+    for key, value in password_data["Keys"].items():
+        if search_text.lower() in value["NameKey"].lower():
+            temp_list.update({key: value})
+    if not temp_list:
+        showerror("KeyLocker", "Key Not Found")
+    load_keys()
 
 
 def copy_username():
@@ -331,6 +382,10 @@ def stateChanged(state: int):
         ui_main.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
     else:
         ui_main.tbP.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+
+
+def show_about():
+    showinfo("KeyLocker", "Version: " + version)
 
 
 def main():
@@ -351,7 +406,7 @@ def main():
     # GUI
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui_main = UiMain.Ui_Main()
+    ui_main = UiMain.Ui_KeyLocker()
     ui_main.setupUi(MainWindow)
 
     # Setting
@@ -380,7 +435,8 @@ def main():
     ui_main.btnAdd.clicked.connect(add_key)
     ui_main.btnDelete.clicked.connect(delete_key)
     ui_main.btnEdit.clicked.connect(edit_key)
-    ui_main.btnClear.clicked.connect(clear_form)
+    ui_main.btnClearForm.clicked.connect(clear_form)
+    ui_main.btnClearSelection.clicked.connect(clear_selection)
 
     ui_main.btnCopyU.clicked.connect(copy_username)
     ui_main.btnCopyP.clicked.connect(copy_password)
@@ -388,8 +444,18 @@ def main():
     ui_main.cbSPass.stateChanged.connect(stateChanged)
 
     ui_main.btnSearch.clicked.connect(search_keys)
+    ui_main.btnClearSearch.clicked.connect(clear_search)
+
+    ui_main.actionAbout.triggered.connect(show_about)
+    
+    ui_main.tbSearch.returnPressed.connect(search_keys)
 
     # End Event
+
+    if (type(password_data["Keys"]) == list):
+        log("INFO", "Fix Keys")
+        password_data["Keys"] = fix_keys()
+        save_main_password()
 
     load_keys()
 
@@ -398,22 +464,27 @@ def main():
 
 
 if __name__ == "__main__":
+    if "-dev" in sys.argv[1:]:
+        devMode = True
     log("INFO", "Start Program")
     log("INFO", "Check Access File Main Pass")
     # ตรวจสอบว่าโปรแกรมมีสิทธิ์ในการอ่านและเขียนไฟล์หรือไม่
-    if not os.access(file_path, os.R_OK) and not os.access(file_path, os.W_OK):
+    if not os.access(os.getcwd(), os.R_OK) and not os.access(os.getcwd(), os.W_OK):
         # ตรวจสอบว่าโปรแกรมกำลังทำงานในโหมด Administrator หรือไม่
         if not ctypes.windll.shell32.IsUserAnAdmin():
             # ถ้าไม่ได้รันในโหมด Administrator ให้เรียกใช้โปรแกรมใหม่ในโหมด Administrator
             ctypes.windll.shell32.ShellExecuteW(
-                None,           # hwnd: handle ของหน้าต่าง (None = หน้าต่างปัจจุบัน)
+                # hwnd: handle ของหน้าต่าง (None = หน้าต่างปัจจุบัน)
+                None,
                 "runas",       # operation: "runas" คือคำสั่งให้รันในโหมด Administrator
-                sys.executable,# file: path ของไฟล์ Python interpreter
-                " ".join(sys.argv), # parameters: arguments ที่ส่งเข้ามาในโปรแกรม
-                None,          # directory: directory เริ่มต้น (None = directory ปัจจุบัน)
+                sys.executable,  # file: path ของไฟล์ Python interpreter
+                # parameters: arguments ที่ส่งเข้ามาในโปรแกรม
+                " ".join(sys.argv),
+                # directory: directory เริ่มต้น (None = directory ปัจจุบัน)
+                None,
                 1             # show command: 1 = แสดงหน้าต่างปกติ
             )
             sys.exit()        # ออกจากโปรแกรมหลังจากเรียกใช้ในโหมด Administrator
-            
+
     get_main_password()
     main()
