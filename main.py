@@ -35,7 +35,7 @@ version = "1.0.1"
 
 random.seed(random.random())
 
-_logSystem = logSystem()
+_logSystem = logSystem(nosave=(not devMode))
 
 log = _logSystem.add
 
